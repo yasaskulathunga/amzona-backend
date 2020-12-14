@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { decode } from 'jsonwebtoken';
 import config from './config'
 const getToken = (user) =>{
     return jwt.sign({
@@ -15,20 +15,25 @@ const getToken = (user) =>{
 
 //authonticate users & admin
 
-const isAuth =(req,res,next) =>{
+const isAuth =(req, res, next) =>{
+    
     const token = req.headers.authorization;
+    console.log(token)
     if(token){
         const onlyToken = token.slice(7, token.length);
-        jwt.verify(onlyToken, config.JWT_SECRET, (err, decode) =>{
+        
+        jwt.verify(onlyToken, config.JWT_SECRET,(err, decode) =>{
             if(err) {
-                return res.status(401).send({msg: 'Invalid Token'});
+                return res.status(401).send({msg: "Invalid Token"});
             }
-            req.user = token;
+            req.user= decode;
             next();
             return
         });
+    }else{
+        return  res.status(401).send({ msg: "Token is not supplied."});
     }
-    return  res.status(401).send({ msg: "Token is not supplied."});
+    
 }
 
 const isAdmin =(req,res,next) =>{
