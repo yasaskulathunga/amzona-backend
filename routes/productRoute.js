@@ -1,6 +1,6 @@
 import express from 'express';
 import Product from '../models/productModel';
-import {getToken} from '../util'
+import {getToken, isAdmin, isAuth} from '../util'
 
 const router = express.Router();
 
@@ -20,6 +20,7 @@ router.get("/:id", async(req, res) => {
     res.status(404).send({ msg:"Product Not Found"})
 });
 
+//product save
 router.post("/" , async(req,res) =>{
     const product = new Product({
         name:req.body.name,
@@ -40,8 +41,8 @@ router.post("/" , async(req,res) =>{
 });
 
 
-
-router.put ("/:id" , async(req,res) =>{
+//product update
+router.put ("/:id" ,isAuth,isAdmin, async(req,res) =>{
     const productId = req.params.id;
     console.log(productId);
     const product= await Product.findOne({_id:productId});
@@ -57,13 +58,26 @@ router.put ("/:id" , async(req,res) =>{
     
         const UpdatedProduct = await product.save();
         if(UpdatedProduct){
-            return res.status(201).send({message:' Product Updated', data: UpdatedProduct});
+            return res.status(200).send({message:' Product Updated', data: UpdatedProduct});
         }
         
         }
         return res.status(500).send({massage:'Error in Updating Product'});
    
     
+});
+
+//product delete
+router.delete("/:id",isAuth,isAdmin, async(req, res) => {
+    const productId = req.params.id;
+    const deleteProduct= await Product.findById(productId);
+    
+    if(deleteProduct){
+    await deleteProduct.remove();
+    res.send({msg:"Product Deleted"});
+    }
+    else 
+    res.send({ msg:"Product Not Deleted"})
 });
 
 
